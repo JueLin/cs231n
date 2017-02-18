@@ -8,4 +8,4 @@
 
 ## Description:
 
-This repository contains my personal solutions to assignments in an awesome Stanford open courses: CS231n Convolutional Neural Networks for Visual Recognition. Really appreciate all course instructors, Prof. Li Fei-fei, Andrej Karpathy and Justin Johnson for providing such comprehensive and rewarding course materials. I highly recommend interested ones to walk through this course ASAP, since firstly it is indeed an excellent one, plus it won't be free-of-charge for following quarters LOL.
+This repository contains my personal solutions to assignments in an awesome Stanford open course: CS231n Convolutional Neural Networks for Visual Recognition. Really appreciate all course instructors, Prof. Li Fei-fei, Andrej Karpathy and Justin Johnson for providing such comprehensive and rewarding course materials. I highly recommend interested ones to walk through this course ASAP, since firstly it is indeed an excellent one, plus it won't be free-of-charge for following quarters LOL.
