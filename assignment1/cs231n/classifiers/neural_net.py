@@ -97,6 +97,7 @@ class TwoLayerNet(object):
     #############################################################################
     num_example = len(y)
     
+    scores -= np.max(scores, axis=1, keepdims=True) # Avoid numerical instability
     scores = np.exp(scores)
     scores /= np.sum(scores, axis=1, keepdims=True)
     loss = -np.sum(np.log(scores[np.arange(num_example), y]))/num_example
