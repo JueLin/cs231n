@@ -249,6 +249,7 @@ class FullyConnectedNet(object):
     ############################################################################
     out = X
     forward_cache = []
+    dropout_cache = []
     num_layers = self.num_layers
     
     for i in xrange(1, num_layers):
@@ -265,6 +266,10 @@ class FullyConnectedNet(object):
       else:
         out, cache = affine_relu_forward(out, self.params[weight], self.params[bias])
         forward_cache.append(cache)  
+        
+      if self.use_dropout:
+        out, cache = dropout_forward(out, self.dropout_param)
+        dropout_cache.append(cache)
       
     scores, score_cache = affine_forward(out, self.params['W%d'%num_layers], self.params['b%d'%num_layers])  
     ############################################################################
@@ -297,6 +302,10 @@ class FullyConnectedNet(object):
     for i in reversed(xrange(1, num_layers)):
       weight = 'W%d'%i
       bias = 'b%d'%i
+      
+      if self.use_dropout:
+        dx = dropout_backward(dx, dropout_cache[-1])
+        dropout_cache.pop()
       
       if self.use_batchnorm:
         gamma = 'gamma%d'%i
