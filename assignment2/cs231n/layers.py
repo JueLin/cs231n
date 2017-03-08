@@ -422,10 +422,10 @@ def conv_forward_naive(x, w, b, conv_param):
   out = np.zeros((N, K, H_prime, W_prime))
   
   for hh in xrange(H_prime):
+    h_range = np.s_[hh*S : hh*S+HH :1]
     for ww in xrange(W_prime):
+      w_range = np.s_[ww*S : ww*S+WW :1]
       for f in xrange(K):
-        h_range = np.s_[hh*S : hh*S+HH :1]
-        w_range = np.s_[ww*S : ww*S+WW :1]
         out[:,f,hh,ww] = np.sum(x_padded[...,h_range, w_range]*w[f], axis=(1,2,3)) + b[f]
   
   #############################################################################
@@ -469,11 +469,10 @@ def conv_backward_naive(dout, cache):
   dx = np.zeros(x_padded.shape)
   
   for hh in xrange(H_prime):
+    h_range = np.s_[hh*S:hh*S+HH:1]
     for ww in range(W_prime):
+      w_range = np.s_[ww*S:ww*S+WW:1]
       for f in xrange(K):
-        h_range = np.s_[hh*S:hh*S+HH:1]
-        w_range = np.s_[ww*S:ww*S+WW:1]
-        
         dw[f] += np.sum(dout[:,f,hh,ww][:,np.newaxis,np.newaxis,np.newaxis]*x_padded[..., h_range, w_range], axis=0)
         dx[..., h_range, w_range] += dout[:,f,hh,ww][:,np.newaxis,np.newaxis,np.newaxis]*w[f][np.newaxis,:]
   
@@ -504,7 +503,22 @@ def max_pool_forward_naive(x, pool_param):
   #############################################################################
   # TODO: Implement the max pooling forward pass                              #
   #############################################################################
-  pass
+  pool_width = pool_param.get('pool_width', 2)
+  pool_height = pool_param.get('pool_height', 2)
+  stride = pool_param.get('stride', 2)
+  
+  N, C, H, W = x.shape
+  H_prime = (H - pool_height)/stride + 1
+  W_prime = (W - pool_width)/stride + 1
+  out = np.zeros((N, C, H_prime, W_prime))
+  
+  for hh in xrange(H_prime):
+    h_range = np.s_[hh*stride:hh*stride+pool_height:1]
+    for ww in xrange(W_prime):
+      w_range = np.s_[ww*stride:ww*stride+pool_width: 1]
+      
+      out[..., hh, ww] = np.amax(x[..., h_range, w_range], axis=(2,3))
+  
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
@@ -527,7 +541,30 @@ def max_pool_backward_naive(dout, cache):
   #############################################################################
   # TODO: Implement the max pooling backward pass                             #
   #############################################################################
-  pass
+
+  x, pool_param = cache
+  pool_width = pool_param.get('pool_width', 2)
+  pool_height = pool_param.get('pool_height', 2)
+  stride = pool_param.get('stride', 2)
+  
+  N, C, H, W = x.shape
+  H_prime = (H - pool_height)/stride + 1
+  W_prime = (W - pool_width)/stride + 1
+  
+  dx = np.zeros(x.shape)
+  
+  for hh in xrange(H_prime):
+    h_range = np.s_[hh*stride:hh*stride+pool_height:1]
+    for ww in xrange(W_prime):
+      w_range = np.s_[ww*stride:ww*stride+pool_width:1]
+      for c in xrange(C):
+        for n in xrange(N):
+          idx = np.argmax(x[n, c, h_range, w_range])
+          idx = np.unravel_index(idx, (pool_height, pool_width))
+          dx[n, c, h_range, w_range][idx] = dout[n, c, hh, ww] # if use ravel() here, a copy is returned 
+                                                               # instead of a view, thus no modification 
+                                                               # on original dx will be made
+
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
