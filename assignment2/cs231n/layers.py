@@ -415,7 +415,7 @@ def conv_forward_naive(x, w, b, conv_param):
   S = conv_param.get('stride', 1)
   P = conv_param.get('pad', 0)
   
-  x = np.pad(x, pad_width=((0,0), (0,0), (P,P), (P,P)), mode='constant', constant_values=0)
+  x_padded = np.pad(x, pad_width=((0,0), (0,0), (P,P), (P,P)), mode='constant', constant_values=0)
   
   H_prime = (H + 2*P - HH)/S + 1
   W_prime = (W + 2*P - WW)/S + 1
@@ -426,7 +426,7 @@ def conv_forward_naive(x, w, b, conv_param):
       for f in xrange(K):
         h_range = np.s_[hh*S : hh*S+HH :1]
         w_range = np.s_[ww*S : ww*S+WW :1]
-        out[:,f,hh,ww] = np.sum(x[...,h_range, w_range]*w[f], axis=(1,2,3)) + b[f]
+        out[:,f,hh,ww] = np.sum(x_padded[...,h_range, w_range]*w[f], axis=(1,2,3)) + b[f]
   
   #############################################################################
   #                             END OF YOUR CODE                              #
@@ -452,7 +452,33 @@ def conv_backward_naive(dout, cache):
   #############################################################################
   # TODO: Implement the convolutional backward pass.                          #
   #############################################################################
-  pass
+  x, w, b, conv_param = cache
+  
+  N, C, H, W = x.shape
+  K, _, HH, WW = w.shape
+  S = conv_param.get('stride', 1)
+  P = conv_param.get('pad', 0)
+  
+  x_padded = np.pad(x, pad_width=((0,0), (0,0), (P,P), (P,P)), mode='constant', constant_values=0)
+  
+  H_prime = (H + 2*P - HH)/S + 1
+  W_prime = (W + 2*P - WW)/S + 1
+  
+  db = np.sum(dout, axis=(0,2,3))
+  dw = np.zeros(w.shape)
+  dx = np.zeros(x_padded.shape)
+  
+  for hh in xrange(H_prime):
+    for ww in range(W_prime):
+      for f in xrange(K):
+        h_range = np.s_[hh*S:hh*S+HH:1]
+        w_range = np.s_[ww*S:ww*S+WW:1]
+        
+        dw[f] += np.sum(dout[:,f,hh,ww][:,np.newaxis,np.newaxis,np.newaxis]*x_padded[..., h_range, w_range], axis=0)
+        dx[..., h_range, w_range] += dout[:,f,hh,ww][:,np.newaxis,np.newaxis,np.newaxis]*w[f][np.newaxis,:]
+  
+  dx = dx[..., P:-P, P:-P]
+  
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
