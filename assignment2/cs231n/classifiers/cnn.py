@@ -50,8 +50,10 @@ class ThreeLayerConvNet(object):
     C, H, W = input_dim
     conv_param = {'stride': 1, 'pad': (filter_size - 1) / 2}
     pool_param = {'pool_height': 2, 'pool_width': 2, 'stride': 2}
-    H_prime = (H + 2*conv_param['pad'] - filter_size)/pool_param['stride'] + 1
-    W_prime = (W + 2*conv_param['pad'] - filter_size)/pool_param['stride'] + 1
+    H_out = (H + 2*conv_param['pad'] - filter_size)/conv_param['stride'] + 1
+    W_out = (W + 2*conv_param['pad'] - filter_size)/conv_param['stride'] + 1
+    H_prime = (H_out - pool_param['pool_height'])/pool_param['stride'] + 1
+    W_prime = (W_out - pool_param['pool_width'])/pool_param['stride'] + 1
     
     
     self.params['W1'] = np.random.randn(num_filters, C, filter_size, filter_size) * weight_scale
