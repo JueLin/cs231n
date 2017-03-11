@@ -1,6 +1,21 @@
 from cs231n.layers import *
 from cs231n.fast_layers import *
 
+def affine_batchnorm_relu_forward(x, w, b, gamma, beta, bn_param):
+  a, fc_cache = affine_forward(x, w, b)
+  y, bn_cache = batchnorm_forward(a, gamma, beta, bn_param)
+  out, relu_cache = relu_forward(y)
+  
+  cache = (fc_cache, bn_cache, relu_cache)
+  return out, cache
+
+def affine_batchnorm_relu_backward(dout, cache):
+  fc_cache, bn_cache, relu_cache = cache
+  dy= relu_backward(dout, relu_cache)
+  da, _, _ = batchnorm_backward_alt(dy, bn_cache)
+  dx, dw, db = affine_backward(da, fc_cache)
+  return dx, dw, db
+
 
 def affine_relu_forward(x, w, b):
   """
@@ -90,4 +105,47 @@ def conv_relu_pool_backward(dout, cache):
   da = relu_backward(ds, relu_cache)
   dx, dw, db = conv_backward_fast(da, conv_cache)
   return dx, dw, db
+
+def conv_batchnorm_relu_pool_forward(x, w, b, conv_param, gamma, beta, bn_param, pool_param):
+  a, conv_cache = conv_forward_fast(x, w, b, conv_param)
+  b, bn_cache = spatial_batchnorm_forward(a, gamma, beta, bn_param)
+  r, relu_cache = relu_forward(b)
+  out, pool_cache = max_pool_forward_fast(r, pool_param)
+  cache = (conv_cache, bn_cache, relu_cache, pool_cache)
+  return out, cache
+
+def conv_batchnorm_relu_pool_backward(dout, cache):
+  conv_cache, bn_cache, relu_cache, pool_cache = cache
+  dr = max_pool_backward_fast(dout, pool_cache)
+  db = relu_backward(dr, relu_cache)
+  da, _, _ = spatial_batchnorm_backward(db, bn_cache)
+  dx, dw, db = conv_backward_fast(da, conv_cache)
+  return dx, dw, db
+
+def conv_batchnorm_forward(x, w, b, fc_param, gamma, beta, bn_param):
+  """
+  Treat FC layers as Conv layers with 1*1 convolution
+  """
+  a, conv_cache = conv_forward_fast(x, w, b, fc_param)
+  out, bn_cache = spatial_batchnorm_forward(a, gamma, beta, bn_param)
+  cache = (conv_cache, bn_cache)
+  return out, cache
+
+def conv_batchnorm_backward(dout, cache):
+  conv_cache, bn_cache = cache
+  da, _, _ = spatial_batchnorm_backward(dout, bn_cache)
+  dx, dw, db = conv_backward_fast(da, conv_cache)
+  return dx, dw, db
+  
+
+
+
+
+
+
+
+
+
+
+
 
