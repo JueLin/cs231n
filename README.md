@@ -1,4 +1,4 @@
-# CS231n: Convolutional Neural Networks for Visual Recognition [\[*Stanford*\]] (http://cs231n.stanford.edu/index.html)
+# CS231n: Convolutional Neural Networks for Visual Recognition [\[*Stanford*\]](http://cs231n.stanford.edu/index.html)
 
 ## Syllabus:
 
