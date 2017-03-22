@@ -140,6 +140,8 @@ class CaptioningRNN(object):
     
     if self.cell_type is 'rnn':
       h, h_cache = rnn_forward(word_in, h0, Wx, Wh, b)
+    elif self.cell_type is 'lstm':
+      h, h_cache = lstm_forward(word_in, h0, Wx, Wh, b)
     
     out, out_cache = temporal_affine_forward(h, W_vocab, b_vocab)
     loss, dout = temporal_softmax_loss(out, captions_out, mask)
@@ -148,6 +150,8 @@ class CaptioningRNN(object):
     
     if self.cell_type is 'rnn':
       d_word_in, dh0, grads['Wx'], grads['Wh'], grads['b'] = rnn_backward(dh, h_cache)
+    elif self.cell_type is 'lstm':
+      d_word_in, dh0, grads['Wx'], grads['Wh'], grads['b'] = lstm_backward(dh, h_cache)
     
     grads['W_embed'] = word_embedding_backward(d_word_in, word_in_cache)
     grads['W_proj'] = features.T.dot(dh0)
@@ -215,10 +219,14 @@ class CaptioningRNN(object):
     # a loop.                                                                 #
     ###########################################################################
     h0 = features.dot(W_proj) + b_proj
+    c = np.zeros_like(h0)
     captions[:,0] = self._start
     for t in xrange(1, max_length):
       word_vec, _ = word_embedding_forward(captions[:,t-1][:,np.newaxis], W_embed)
-      h0, _ = rnn_step_forward(word_vec.reshape(N, -1), h0, Wx, Wh, b)
+      if self.cell_type is 'rnn':
+        h0, _ = rnn_step_forward(word_vec.reshape(N, -1), h0, Wx, Wh, b)
+      elif self.cell_type is 'lstm':
+        h0, c, _ = lstm_step_forward(word_vec.reshape(N, -1), h0, c, Wx, Wh, b)
       out, _ = temporal_affine_forward(h0.reshape(N, 1, -1), W_vocab, b_vocab)
       captions[:,t] = np.argmax(out.reshape(N,-1), axis=-1)
       for n in xrange(N):
