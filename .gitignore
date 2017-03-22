@@ -3,3 +3,8 @@
 *.pyc
 *.pyx
 *.mp4
+*.pdf
+*.h5
+*.json
+*.txt
+*.JPEG
