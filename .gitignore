@@ -8,3 +8,7 @@
 *.json
 *.txt
 *.JPEG
+*ckpt*
+*.npz
+*2014*
+*.gz
